@@ -1,0 +1,5 @@
+_pycache_
+.idea
+*.iml
+*.pyc
+*.xlsx
