@@ -6,6 +6,7 @@ from gi.repository import Gtk, GdkPixbuf, Gdk
 from DatabaseOperations import *
 from Bill import *
 from InformationDialog import *
+from BillingSoftwareUtility import *
 
 class FrontEnd(Gtk.VBox):
 
@@ -13,6 +14,7 @@ class FrontEnd(Gtk.VBox):
 		super(FrontEnd, self).__init__(*args, **kwargs)
 
 		db = DatabaseOperations()
+		utility = BillingSoftwareUtility()
 		self.item_list_from_database = db.get_all_items() # Get all food items from database on application init
 		self.item_list_for_bill = {} # Dictionary for Bill Display
 		self.total_amount = 0 # Total amount of the bill
@@ -26,7 +28,7 @@ class FrontEnd(Gtk.VBox):
 		self.item_code_entry = Gtk.Entry()
 		self.item_code_entry.set_size_request(10, 20)
 		self.item_code_entry.connect("key-press-event", self._key_pressed)
-		self.item_code_entry.connect("changed", self.on_changed)
+		self.item_code_entry.connect("changed", utility.insert_only_number)
 		self.item_code_entry.grab_focus()
 		item_name_label = Gtk.Label()
 		item_name_label.set_markup("Press <b>""+""</b> to add item to bill. \nPress <b>""Enter""</b> to finalize the Bill.")
@@ -71,7 +73,7 @@ class FrontEnd(Gtk.VBox):
 		self.pack_start(bottom_box, False, False, 0)
 
 		total_label = Gtk.Label("Total: ")
-		
+
 		self.total_Entry = Gtk.Label()
 		self.total_Entry.set_markup("<span font_desc='Arial 20'>{}</span>".format(str(0)))
 		bottom_box.pack_end(self.total_Entry, False, False, 0)
@@ -83,7 +85,8 @@ class FrontEnd(Gtk.VBox):
 		"""
 		key_value = event.keyval
 		key_name = Gdk.keyval_name(key_value)
-		key_mapping = {'KP_Add' : self.add_item_to_bill,
+		print(key_name)
+		key_mapping = {'equal' : self.add_item_to_bill,
 					   'Return' : self.final_bill}
 
 		if(key_name in key_mapping):
@@ -91,7 +94,7 @@ class FrontEnd(Gtk.VBox):
 
 	def add_item_to_bill(self):
 		"""
-		Add the item to the list 
+		Add the item to the list
 		"""
 		item_code = int(self.item_code_entry.get_text())
 		self.item_code_entry.set_text("")
@@ -113,8 +116,8 @@ class FrontEnd(Gtk.VBox):
 		self.update_bill()
 
 	def update_bill(self):
-		""" 
-		Updates the bill list 
+		"""
+		Updates the bill list
 		"""
 		self.bill_list_store.clear()
 		for column in self.bill_tree_view.get_columns():
@@ -129,7 +132,7 @@ class FrontEnd(Gtk.VBox):
 		self.bill_tree_view.set_model(self.bill_list_store)
 
 	def final_bill(self):
-		""" 
+		"""
 		Finalize the bill
 		"""
 		dialog_box = Gtk.Dialog("Print Bill", None, Gtk.DialogFlags.MODAL, (Gtk.STOCK_YES, 1, Gtk.STOCK_NO, 2, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
@@ -146,15 +149,15 @@ class FrontEnd(Gtk.VBox):
 			self.clear_bill()
 		elif response == Gtk.ResponseType.CANCEL:
 			dialog_box.destroy()
-		
+
 	def clear_bill(self):
-		""" 
-		Clear all the variables related to the bill 
+		"""
+		Clear all the variables related to the bill
 		"""
 		db = DatabaseOperations()
 		db.enter_bill_into_database(self.item_list_for_bill, self.total_amount)
 		self.bill_list_store.clear()
-		self.item_list_for_bill.clear()	
+		self.item_list_for_bill.clear()
 		self.total_amount = 0
 		self.total_Entry.set_markup("<span font_desc='Arial 20'>{}</span>".format(str(0)))
 		db.increment_bill_number()
@@ -163,7 +166,7 @@ class FrontEnd(Gtk.VBox):
 
 	def on_changed(self, *args):
 		"""
-		 Appends only 0-9 numbers in the input box 
+		 Appends only 0-9 numbers in the input box
 		"""
 		text = self.item_code_entry.get_text().strip()
 		self.item_code_entry.set_text(''.join([i for i in text if i in '0123456789']))
