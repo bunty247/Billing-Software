@@ -5,6 +5,7 @@ from gi.repository import Gtk, GdkPixbuf, Gdk
 from DatabaseOperations import *
 from InformationDialog import *
 from BillingSoftwareUtility import *
+from BillingTab import *
 
 class DatabaseWindow(Gtk.VBox):
 
@@ -82,6 +83,8 @@ class DatabaseWindow(Gtk.VBox):
 		operation = int(model[tree_iter][0])
 		if operation == 1:
 			try:
+				billingTab = BillingTab()
+				billingTab.add_item_to_list([item_code, item_name, item_price])
 				result = db.add_new_item([item_code, item_name, item_price])
 				InformationDialog("New Item Added Successfully", "Item Code:"+str(item_code))
 			except Exception as e:
@@ -97,6 +100,5 @@ class DatabaseWindow(Gtk.VBox):
 		self.clear_input_fields()
 
 	def clear_input_fields(self, *args):
-		self.item_code.set_text('')
-		self.item_name.set_text('')
-		self.item_price.set_text('')
+		utility = BillingSoftwareUtility()
+		utility.clear_input_fields(self.item_code, self.item_name, self.item_price)

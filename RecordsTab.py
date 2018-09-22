@@ -6,22 +6,22 @@ from DatabaseOperations import *
 from RecordsWindow import *
 from InformationDialog import *
 
-class Records(Gtk.VBox):
+class RecordsTab(Gtk.VBox):
 
 	def __init__(self, *args, **kwargs):
-		super(Records, self).__init__(*args, **kwargs)
+		super(RecordsTab, self).__init__(*args, **kwargs)
 
 		records_type_liststore = Gtk.ListStore(str)
 		records_type_liststore.append(["Daily"])
 		records_type_liststore.append(["Monthly"])
-		
+
 		top_box = Gtk.HBox(False, 10)
 		self.pack_start(top_box, False, False, 10)
 
 		label = Gtk.Label("Records Type:")
 		records_type = Gtk.ComboBox.new_with_model_and_entry(records_type_liststore)
 		records_type.set_entry_text_column(0)
-		
+
 		top_box.pack_start(label, False, False, 10)
 		top_box.pack_start(records_type, False, False, 0)
 
@@ -47,11 +47,12 @@ class Records(Gtk.VBox):
 		get_button = Gtk.Button("Get Records")
 		get_button.connect("clicked", self.get_records, records_type)
 		clear_button = Gtk.Button("Clear")
+		clear_button.connect("clicked", self.clear_input_fields)
 		bottom_box.pack_start(get_button, False, False, 10)
 		bottom_box.pack_start(clear_button, False, False, 10)
 
 	def get_records(self, get_records_button, record_type_combobox):
-		""" 
+		"""
 		Displays a Gtk.Dialog of the records
 			Args:
 				param1 (Gtk.Button): Button to display records
@@ -67,3 +68,6 @@ class Records(Gtk.VBox):
 		if response == Gtk.ResponseType.CANCEL:
 			dialog.destroy()
 
+	def clear_input_fields(self, *args):
+		utility = BillingSoftwareUtility()
+		utility.clear_input_fields(self.start_date, self.end_date)
