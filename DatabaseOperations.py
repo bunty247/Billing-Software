@@ -73,7 +73,8 @@ class DatabaseOperations:
             {'id': 'bill_number'}).get('date')
         bill_date_db_obj = datetime.datetime.strptime(bill_date_db, "%d/%m/%Y")
         current_date_str = datetime.datetime.now().strftime("%d/%m/%Y")
-        current_date_object = datetime.datetime.strptime(current_date_str, "%d/%m/%Y")
+        current_date_object = datetime.datetime.strptime(
+            current_date_str, "%d/%m/%Y")
 
         if(bill_date_db_obj < current_date_object):
             self.db.sequence.update({'id': 'bill_number'}, {'$set': {'date': str(current_date_str),
@@ -131,3 +132,19 @@ class DatabaseOperations:
         """
         self.db.food_items.update({"item_code": item[0]}, {
                                   '$set': {"item_name": item[1], "cost": item[2]}})
+
+    def get_customer_details(self, mobile_number):
+        customer_json = self.db.customer.find_one(
+            {'mobile_number': mobile_number})
+        if customer_json == None:
+            return None
+        else:
+            return Customer(mobile_number, customer_json['customer_name'],
+                            int(customer_json['reward_points']))
+
+    def update_reward_points(self, mobile_number, points):
+        self.db.customer.update({'mobile_number': int(mobile_number)}, {
+                                '$inc': {'reward_points': points}})
+
+    def add_new_customer(self, mobile_number, customer_name):
+        self.db.customer.insert({'mobile_number': mobile_number, 'customer_name': customer_name, 'reward_points': 0})
